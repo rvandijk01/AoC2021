@@ -42,10 +42,10 @@ solve xs bs
     where checkBoards = filter (checkBoard)
 
 computeScore :: (Board, Int) -> Int
-computeScore (b, x) = (*) 68 $ foldl (+) 0 $ filter (/= -1) $ concat b
+computeScore (b, x) = (*) 44 $ foldl (+) 0 $ filter (/= -1) $ concat b
 
-final :: IO Int
-final = computeScore <$> answer4_2
+-- final :: IO Int
+-- final = computeScore <$> answer4_2
 
 answer4_1 :: IO (Board, Int)
 answer4_1 = solve <$> (makeBingoSeq <$> head <$> lines) <*> (makeBoards <$> drop 1 <$> lines) where
@@ -59,8 +59,16 @@ solve2 xs bs
     | otherwise = solve2 (tail xs) (map (fill $ head xs) bs)
     where checkBoards = filter (not . checkBoard)
 
+lastWinning :: [Int] -> [Board] -> (Board, Int)
+lastWinning xs bs
+    | (length (checkBoards bs) == 1) && (checkBoard (head bs)) = (head (checkBoards bs), head xs)
+    | length (checkBoards bs) == 1 = lastWinning (tail xs) (map (fill $ head xs) (checkBoards bs))
+    | length (checkBoards bs) > 1 = lastWinning (tail xs) (map (fill $ head xs) (checkBoards bs))
+    | otherwise = error "weird thing happened"
+    where checkBoards = filter (not . checkBoard) --checkBoards bs => all boards that are not winning
+
 answer4_2 :: IO (Board, Int)
-answer4_2 = solve2 <$> (makeBingoSeq <$> head <$> lines) <*> (makeBoards <$> drop 1 <$> lines) where
+answer4_2 = lastWinning <$> (makeBingoSeq <$> head <$> lines) <*> (makeBoards <$> drop 1 <$> lines) where
     lines = readLines inputFile
 
 --21 last number called
